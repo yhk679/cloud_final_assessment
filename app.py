@@ -1,11 +1,29 @@
 from flask import Flask, request
 import boto3
+import pymysql
+from datetime import datetime
 import os
 
 app = Flask(__name__)
 
 # S3 bucket name
 BUCKET_NAME = "csc3074-file-upload"
+
+# RDS database credentials
+DB_HOST = "database-1test.ctyuckgylt1t.us-east-1.rds.amazonaws.com"
+DB_USER = "admin"
+DB_PASSWORD = "admin123"   # replace with your RDS password
+DB_NAME = "filedb"
+
+# Function to get MySQL connection
+def get_db_connection():
+    return pymysql.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME,
+        cursorclass=pymysql.cursors.DictCursor
+    )
 
 # Home page - file upload form
 @app.route("/")
@@ -108,8 +126,6 @@ def home():
     </html>
     """
 
-
-
 # File upload handler
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -121,14 +137,23 @@ def upload():
         return "No selected file", 400
 
     try:
+        # Upload file to S3
         s3 = boto3.client("s3")
         s3.upload_fileobj(file, BUCKET_NAME, file.filename)
+
+        # Insert metadata into RDS
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            sql = "INSERT INTO files (filename, upload_time) VALUES (%s, %s)"
+            cursor.execute(sql, (file.filename, datetime.now()))
+        conn.commit()
+        conn.close()
+
         return f"Upload successful: {file.filename}"
+
     except Exception as e:
         return f"Upload failed: {str(e)}", 500
 
 # Run Flask on all interfaces, port 80
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80)
-
-
