@@ -17,22 +17,22 @@ def home():
         <title>S3 File Upload</title>
         <style>
             body {
-                font-family: Arial, Helvetica, sans-serif;
-                background: linear-gradient(135deg, #4facfe, #00f2fe);
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea, #764ba2);
                 height: 100vh;
-                margin: 0;
                 display: flex;
-                align-items: center;
                 justify-content: center;
+                align-items: center;
+                margin: 0;
             }
 
-            .container {
+            .card {
                 background: white;
                 padding: 30px 40px;
                 border-radius: 12px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
                 width: 350px;
                 text-align: center;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             }
 
             h1 {
@@ -41,46 +41,73 @@ def home():
             }
 
             input[type="file"] {
-                margin: 15px 0;
-                width: 100%;
+                display: none;
+            }
+
+            .file-label {
+                display: inline-block;
+                padding: 12px 20px;
+                background: #667eea;
+                color: white;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background 0.3s;
+            }
+
+            .file-label:hover {
+                background: #5563d6;
+            }
+
+            #file-name {
+                margin-top: 10px;
+                font-size: 13px;
+                color: #555;
             }
 
             button {
-                background-color: #4facfe;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 6px;
-                font-size: 16px;
-                cursor: pointer;
+                margin-top: 20px;
+                padding: 12px;
                 width: 100%;
+                background: #764ba2;
+                border: none;
+                color: white;
+                font-size: 15px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.3s;
             }
 
             button:hover {
-                background-color: #00c6ff;
-            }
-
-            footer {
-                margin-top: 15px;
-                font-size: 12px;
-                color: #777;
+                background: #5e3b8a;
             }
         </style>
+
+        <script>
+            function showFileName() {
+                const input = document.getElementById("file");
+                const fileName = document.getElementById("file-name");
+                fileName.textContent = input.files.length > 0 
+                    ? input.files[0].name 
+                    : "No file selected";
+            }
+        </script>
     </head>
+
     <body>
-        <div class="container">
-            <h1>Upload File to S3</h1>
+        <div class="card">
+            <h1>Upload File</h1>
             <form action="/upload" method="post" enctype="multipart/form-data">
-                <input type="file" name="file" required>
-                <button type="submit">Upload</button>
+                <label class="file-label" for="file">Choose File</label>
+                <input id="file" type="file" name="file" onchange="showFileName()" required>
+                <div id="file-name">No file selected</div>
+                <button type="submit">Upload to S3</button>
             </form>
-            <footer>
-                Cloud File Upload System
-            </footer>
         </div>
     </body>
     </html>
     """
+
 
 
 # File upload handler
@@ -103,4 +130,5 @@ def upload():
 # Run Flask on all interfaces, port 80
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80)
+
 
